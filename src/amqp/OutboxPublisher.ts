@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class Publisher {
+export class OutboxPublisher {
 
   queue: string;
   channel: any;
@@ -11,7 +11,11 @@ export class Publisher {
     this.queue = queue;
   }
 
-  send(payload: any): void {
-    this.channel.sendToQueue(this.queue, Buffer.from(JSON.stringify(payload)));
+  send(payload: any, taskId: string): void {
+    const message = {
+      payload,
+      taskId,
+    };
+    this.channel.sendToQueue(this.queue, Buffer.from(JSON.stringify(message)));
   }
 }

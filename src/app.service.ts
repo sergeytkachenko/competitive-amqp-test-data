@@ -1,8 +1,13 @@
 import { Injectable } from '@nestjs/common';
+import { OutboxPublisher } from './amqp/OutboxPublisher';
 
 @Injectable()
 export class AppService {
-  getHello(): string {
-    return 'Hello World!';
+  publisher: OutboxPublisher;
+
+  constructor(publisher: OutboxPublisher) {
+    this.publisher = publisher;
   }
+
+  main(): void {}
 }
