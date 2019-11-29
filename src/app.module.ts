@@ -7,6 +7,8 @@ import { ConfirmTaskConsumer } from './amqp/ConfirmTaskConsumer';
 import { TestDataPublisher } from './amqp/test/TestDataPublisher';
 import { TaskStore } from './task/TaskStore';
 import { TestWorker } from './amqp/test/TestWorker';
+import { AppGateway } from './ws/AppGateway';
+import { Channel } from './amqp/Channel';
 
 const connectionAmqp = 'amqp://user:password@k8s:30403';
 
@@ -15,78 +17,47 @@ const connectionAmqp = 'amqp://user:password@k8s:30403';
   controllers: [AppController],
   providers: [
     AppService,
+    AppGateway,
     {
       provide: TaskStore,
       useClass: TaskStore,
+      inject: [AppGateway],
+    },
+    {
+      provide: 'AMQP_CONNECT_STRING',
+      useValue: 'amqp://user:password@k8s:30403',
+    },
+    {
+      provide: 'INBOX',
+      useValue: 'inbox',
+    },
+    {
+      provide: 'OUTBOX',
+      useValue: 'outbox',
+    },
+    {
+      provide: 'CONFIRM',
+      useValue: 'confirm',
     },
     {
       provide: CreateTaskConsumer,
-      useFactory: async (taskStore: TaskStore) => {
-        const q = 'inbox';
-        const connection = await require('amqplib')
-          .connect(connectionAmqp);
-        const channel = await connection.createChannel();
-        await channel.assertQueue(q);
-        const consumer = new CreateTaskConsumer(channel, q, taskStore);
-        await consumer.consume(q);
-        return consumer;
-      },
-      inject: [TaskStore],
+      useClass: CreateTaskConsumer,
     },
     {
       provide: ConfirmTaskConsumer,
-      useFactory: async () => {
-        const q = 'confirm';
-        const connection = await require('amqplib')
-          .connect(connectionAmqp);
-        const channel = await connection.createChannel();
-        await channel.assertQueue(q);
-        const consumer = new ConfirmTaskConsumer(channel, q);
-        await consumer.consume(q);
-        return consumer;
-      },
+      useClass: ConfirmTaskConsumer,
     },
     {
       provide: 'testWorker1',
-      useFactory: async () => {
-        const q = 'outbox';
-        const connection = await require('amqplib')
-          .connect(connectionAmqp);
-        const channel = await connection.createChannel();
-        await channel.prefetch(1, false);
-        await channel.assertQueue(q);
-        const consumer = new TestWorker(channel, q, 'testWorker1');
-        await consumer.consume(q);
-        return consumer;
-      },
+      useClass: TestWorker,
     },
     {
       provide: 'testWorker2',
-      useFactory: async () => {
-        const q = 'outbox';
-        const connection = await require('amqplib')
-          .connect(connectionAmqp);
-        const channel = await connection.createChannel();
-        await channel.prefetch(1, false);
-        await channel.assertQueue(q);
-        const consumer = new TestWorker(channel, q, 'testWorker2');
-        await consumer.consume(q);
-        return consumer;
-      },
+      useClass: TestWorker,
     },
     {
       provide: 'testWorker3',
-      useFactory: async () => {
-        const q = 'outbox';
-        const connection = await require('amqplib')
-          .connect(connectionAmqp);
-        const channel = await connection.createChannel();
-        await channel.prefetch(1, false);
-        await channel.assertQueue(q);
-        const consumer = new TestWorker(channel, q, 'testWorker3');
-        await consumer.consume(q);
-        return consumer;
-      },
+      useClass: TestWorker,
     },
     {
       provide: OutboxPublisher,
@@ -110,6 +81,7 @@ const connectionAmqp = 'amqp://user:password@k8s:30403';
         return new TestDataPublisher(channel, q);
       },
     }],
+  exports: [AppGateway],
 })
 export class AppModule {
 }

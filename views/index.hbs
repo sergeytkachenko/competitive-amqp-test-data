@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>App</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
+    <script>
+        const socket = io.connect( 'http://127.0.0.1:3000', {
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax : 5000,
+            reconnectionAttempts: 99999
+        } );
+        socket.on('outbox', function(msg){
+            console.log(msg);
+        });
+    </script>
+</head>
+<body>
+{{ message }}
+</body>
+</html>

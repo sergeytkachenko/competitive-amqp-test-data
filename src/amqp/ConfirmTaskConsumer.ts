@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { AbstractConsumer } from './AbstractConsumer';
 
 @Injectable()
 export class ConfirmTaskConsumer extends AbstractConsumer {
 
-  constructor(channel: any, queue: string) {
-    super(channel, queue);
+  constructor(@Inject('AMQP_CONNECT_STRING') amqpConnectionString: string, @Inject('CONFIRM') queue: string) {
+    super(amqpConnectionString, queue);
   }
 
   onConsume(msg: any): void {

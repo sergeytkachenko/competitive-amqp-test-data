@@ -10,7 +10,7 @@ export class TestDataPublisher {
   constructor(channel: any, queue: string) {
     this.channel = channel;
     this.queue = queue;
-    this.randomData();
+    setTimeout(() => this.randomData(), 15 * 1000);
     //setInterval(() => this.randomData(), 60 * 1000);
   }
 

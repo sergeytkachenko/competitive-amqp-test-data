@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { TaskStore } from '../task/TaskStore';
 import { AbstractConsumer } from './AbstractConsumer';
 import { InboxTaskMessage } from './dto/InboxTaskMessage';
@@ -8,8 +8,8 @@ export class CreateTaskConsumer extends AbstractConsumer {
 
   taskStore: TaskStore;
 
-  constructor(channel: any, queue: string, taskStore: TaskStore) {
-    super(channel, queue);
+  constructor(@Inject('AMQP_CONNECT_STRING') amqpConnectionString: string, @Inject('INBOX') queue: string, taskStore: TaskStore) {
+    super(amqpConnectionString, queue);
     this.taskStore = taskStore;
   }
 

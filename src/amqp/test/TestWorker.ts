@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { AbstractConsumer } from '../AbstractConsumer';
 import { OutboxTaskMessage } from '../dto/OutboxTaskMessage';
 
@@ -7,9 +7,8 @@ export class TestWorker extends AbstractConsumer {
 
   id: string;
 
-  constructor(channel: any, queue: string, id: string) {
-    super(channel, queue);
-    this.id = id;
+  constructor(@Inject('AMQP_CONNECT_STRING') amqpConnectionString: string, @Inject('OUTBOX') queue: string) {
+    super(amqpConnectionString, queue);
   }
 
   onConsume(msg: any): void {
