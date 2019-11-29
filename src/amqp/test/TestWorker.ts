@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { AbstractConsumer } from './AbstractConsumer';
+import { AbstractConsumer } from '../AbstractConsumer';
 
 @Injectable()
-export class ConfirmTaskConsumer extends AbstractConsumer {
+export class TestWorker extends AbstractConsumer {
 
   constructor(channel: any, queue: string) {
     super(channel, queue);
@@ -10,6 +10,7 @@ export class ConfirmTaskConsumer extends AbstractConsumer {
 
   onConsume(msg: any): void {
     this.channel.ack(msg);
+    console.log(`outbox`, msg);
   }
 
 }

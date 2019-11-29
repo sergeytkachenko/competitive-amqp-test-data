@@ -5,6 +5,10 @@ import { OutboxPublisher } from './amqp/OutboxPublisher';
 import { CreateTaskConsumer } from './amqp/CreateTaskConsumer';
 import { ConfirmTaskConsumer } from './amqp/ConfirmTaskConsumer';
 import { TestDataPublisher } from './amqp/test/TestDataPublisher';
+import { TaskStore } from './task/TaskStore';
+import { TestWorker } from './amqp/test/TestWorker';
+
+const connectionAmqp = 'amqp://user:password@k8s:30403';
 
 @Module({
   imports: [],
@@ -12,27 +16,45 @@ import { TestDataPublisher } from './amqp/test/TestDataPublisher';
   providers: [
     AppService,
     {
+      provide: TaskStore,
+      useClass: TaskStore,
+    },
+    {
       provide: CreateTaskConsumer,
-      useFactory: async () => {
+      useFactory: async (taskStore: TaskStore) => {
         const q = 'inbox';
         const connection = await require('amqplib')
-          .connect('amqp://rabbitmq:rabbitmq@localhost');
+          .connect(connectionAmqp);
         const channel = await connection.createChannel();
         await channel.assertQueue(q);
-        const consumer = new CreateTaskConsumer(channel, q);
+        const consumer = new CreateTaskConsumer(channel, q, taskStore);
         await consumer.consume(q);
         return consumer;
       },
+      inject: [TaskStore],
     },
     {
       provide: ConfirmTaskConsumer,
       useFactory: async () => {
         const q = 'confirm';
         const connection = await require('amqplib')
-          .connect('amqp://rabbitmq:rabbitmq@localhost');
+          .connect(connectionAmqp);
         const channel = await connection.createChannel();
         await channel.assertQueue(q);
         const consumer = new ConfirmTaskConsumer(channel, q);
+        await consumer.consume(q);
+        return consumer;
+      },
+    },
+    {
+      provide: TestWorker,
+      useFactory: async () => {
+        const q = 'outbox';
+        const connection = await require('amqplib')
+          .connect(connectionAmqp);
+        const channel = await connection.createChannel();
+        await channel.assertQueue(q);
+        const consumer = new TestWorker(channel, q);
         await consumer.consume(q);
         return consumer;
       },
@@ -42,7 +64,7 @@ import { TestDataPublisher } from './amqp/test/TestDataPublisher';
       useFactory: async () => {
         const q = 'outbox';
         const connection = await require('amqplib')
-          .connect('amqp://rabbitmq:rabbitmq@localhost');
+          .connect(connectionAmqp);
         const channel = await connection.createChannel();
         await channel.assertQueue(q);
         return new OutboxPublisher(channel, q);
@@ -53,7 +75,7 @@ import { TestDataPublisher } from './amqp/test/TestDataPublisher';
       useFactory: async () => {
         const q = 'inbox';
         const connection = await require('amqplib')
-          .connect('amqp://rabbitmq:rabbitmq@localhost');
+          .connect(connectionAmqp);
         const channel = await connection.createChannel();
         await channel.assertQueue(q);
         return new TestDataPublisher(channel, q);

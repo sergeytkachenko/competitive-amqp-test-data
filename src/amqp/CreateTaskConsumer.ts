@@ -1,23 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { Consumer } from './Consumer';
+import { TaskStore } from '../task/TaskStore';
+import { AbstractConsumer } from './AbstractConsumer';
+import { TaskMessage } from './dto/TaskMessage';
 
 @Injectable()
-export class CreateTaskConsumer  implements Consumer {
-  queue: string;
-  channel: any;
+export class CreateTaskConsumer extends AbstractConsumer {
 
-  constructor(channel: any, queue: string) {
-    this.channel = channel;
-    this.queue = queue;
+  taskStore: TaskStore;
+
+  constructor(channel: any, queue: string, taskStore: TaskStore) {
+    super(channel, queue);
+    this.taskStore = taskStore;
   }
 
-  consume(queue: string): Promise<any> {
-    return this.channel.consume(queue, (msg) => {
-      if (msg !== null) {
-        console.log(msg.content.toString());
-        this.channel.ack(msg);
-      }
-    });
+  onConsume(msg: any): void {
+    const taskMessage = JSON.parse(msg.content) as TaskMessage;
+    this.taskStore.push(taskMessage);
+    this.channel.ack(msg);
   }
 
 }
