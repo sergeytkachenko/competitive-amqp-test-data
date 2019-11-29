@@ -4,19 +4,107 @@
     <meta charset="utf-8" />
     <title>App</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
-    <script>
-        const socket = io.connect( 'http://127.0.0.1:3000', {
-            reconnection: true,
-            reconnectionDelay: 1000,
-            reconnectionDelayMax : 5000,
-            reconnectionAttempts: 99999
-        } );
-        socket.on('outbox', function(msg){
-            console.log(msg);
-        });
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.js"></script>
 </head>
 <body>
-{{ message }}
+    <div style="width:75%;">
+        <canvas id="canvas"></canvas>
+    </div>
+    <script>
+        Chart.pluginService.register({
+            beforeRender: function (chart) {
+                if (chart.config.options.showAllTooltips) {
+                    // create an array of tooltips
+                    // we can't use the chart tooltip because there is only one tooltip per chart
+                    chart.pluginTooltips = [];
+                    chart.config.data.datasets.forEach(function (dataset, i) {
+                        chart.getDatasetMeta(i).data.forEach(function (sector, j) {
+                            chart.pluginTooltips.push(new Chart.Tooltip({
+                                _chart: chart.chart,
+                                _chartInstance: chart,
+                                _data: chart.data,
+                                _options: chart.options.tooltips,
+                                _active: [sector]
+                            }, chart));
+                        });
+                    });
+
+                    // turn off normal tooltips
+                    chart.options.tooltips.enabled = false;
+                }
+            },
+            afterDraw: function (chart, easing) {
+                if (chart.config.options.showAllTooltips) {
+                    // we don't want the permanent tooltips to animate, so don't do anything till the animation runs atleast once
+                    if (!chart.allTooltipsOnce) {
+                        if (easing !== 1)
+                            return;
+                        chart.allTooltipsOnce = true;
+                    }
+
+                    // turn on tooltips
+                    chart.options.tooltips.enabled = true;
+                    Chart.helpers.each(chart.pluginTooltips, function (tooltip) {
+                        tooltip.initialize();
+                        tooltip.update();
+                        // we don't actually need this since we are not animating tooltips
+                        tooltip.pivot();
+                        tooltip.transition(easing).draw();
+                    });
+                    chart.options.tooltips.enabled = false;
+                }
+            }
+        });
+        const tasks = {red: 0, green: 0, blue: 0};
+        function getData() {
+          return [tasks.red, tasks.green, tasks.blue];
+        };
+        const lineChartData = {
+            labels: ['red', 'green', 'blue'],
+            datasets: [{
+                label: 'Dataset 1',
+                fill: false,
+                backgroundColor: ['red', 'green', 'blue'],
+                data: getData(),
+            }]
+        };
+
+        window.onload = function() {
+            const ctx = document.getElementById('canvas').getContext('2d');
+            window.chart = new Chart(ctx, {
+                type: 'pie',
+                data: lineChartData,
+                options: {
+                    showAllTooltips: true,
+                    tooltips: {
+                        mode: 'point'
+                    },
+                    responsive: true,
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Count task by client'
+                    }
+                }
+            });
+            const socket = io.connect( 'http://127.0.0.1:3000', {
+                reconnection: true,
+                reconnectionDelay: 1000,
+                reconnectionDelayMax : 5000,
+                reconnectionAttempts: 99999
+            } );
+            socket.on('outbox', function(msg){
+                tasks[msg.queue]++;
+                window.chart.data.datasets.forEach((dataset) => {
+                    dataset.data = getData();
+                });
+                window.requestAnimationFrame(() => {
+                    window.chart.update();
+                }, 1000);
+            });
+        };
+    </script>
 </body>
 </html>

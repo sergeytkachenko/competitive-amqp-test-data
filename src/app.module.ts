@@ -8,7 +8,6 @@ import { TestDataPublisher } from './amqp/test/TestDataPublisher';
 import { TaskStore } from './task/TaskStore';
 import { TestWorker } from './amqp/test/TestWorker';
 import { AppGateway } from './ws/AppGateway';
-import { Channel } from './amqp/Channel';
 
 const connectionAmqp = 'amqp://user:password@k8s:30403';
 
