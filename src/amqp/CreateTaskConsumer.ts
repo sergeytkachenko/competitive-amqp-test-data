@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { TaskStore } from '../task/TaskStore';
 import { AbstractConsumer } from './AbstractConsumer';
-import { TaskMessage } from './dto/TaskMessage';
+import { InboxTaskMessage } from './dto/InboxTaskMessage';
 
 @Injectable()
 export class CreateTaskConsumer extends AbstractConsumer {
@@ -14,7 +14,7 @@ export class CreateTaskConsumer extends AbstractConsumer {
   }
 
   onConsume(msg: any): void {
-    const taskMessage = JSON.parse(msg.content) as TaskMessage;
+    const taskMessage = JSON.parse(msg.content) as InboxTaskMessage;
     this.taskStore.push(taskMessage);
     this.channel.ack(msg);
   }

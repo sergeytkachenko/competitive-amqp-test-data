@@ -11,7 +11,7 @@ export class TestDataPublisher {
     this.channel = channel;
     this.queue = queue;
     this.randomData();
-    setInterval(() => this.randomData(), 60 * 1000);
+    //setInterval(() => this.randomData(), 60 * 1000);
   }
 
   randomData(): void {
@@ -19,6 +19,7 @@ export class TestDataPublisher {
       for (let i = 0; i < 10  * 1000; i ++) {
         const payload = {
           date: new Date(),
+          queue,
         };
         const message = {
           payload,

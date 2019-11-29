@@ -47,14 +47,43 @@ const connectionAmqp = 'amqp://user:password@k8s:30403';
       },
     },
     {
-      provide: TestWorker,
+      provide: 'testWorker1',
       useFactory: async () => {
         const q = 'outbox';
         const connection = await require('amqplib')
           .connect(connectionAmqp);
         const channel = await connection.createChannel();
+        await channel.prefetch(1, false);
         await channel.assertQueue(q);
-        const consumer = new TestWorker(channel, q);
+        const consumer = new TestWorker(channel, q, 'testWorker1');
+        await consumer.consume(q);
+        return consumer;
+      },
+    },
+    {
+      provide: 'testWorker2',
+      useFactory: async () => {
+        const q = 'outbox';
+        const connection = await require('amqplib')
+          .connect(connectionAmqp);
+        const channel = await connection.createChannel();
+        await channel.prefetch(1, false);
+        await channel.assertQueue(q);
+        const consumer = new TestWorker(channel, q, 'testWorker2');
+        await consumer.consume(q);
+        return consumer;
+      },
+    },
+    {
+      provide: 'testWorker3',
+      useFactory: async () => {
+        const q = 'outbox';
+        const connection = await require('amqplib')
+          .connect(connectionAmqp);
+        const channel = await connection.createChannel();
+        await channel.prefetch(1, false);
+        await channel.assertQueue(q);
+        const consumer = new TestWorker(channel, q, 'testWorker3');
         await consumer.consume(q);
         return consumer;
       },

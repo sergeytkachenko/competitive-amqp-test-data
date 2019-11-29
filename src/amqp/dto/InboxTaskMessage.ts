@@ -1,4 +1,4 @@
-export class TaskMessage {
+export class InboxTaskMessage {
   queue: string;
   payload: any;
 }
