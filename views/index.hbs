@@ -5,10 +5,44 @@
     <title>App</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.js"></script>
+    <style>
+        .main {
+            display: flex;
+        }
+
+        .main > div {
+            flex: 1;
+        }
+
+        .workers div {
+            padding: 20px;
+        }
+
+        .color {
+            padding: 5px 30px;
+            margin-left: 20px;
+        }
+    </style>
 </head>
 <body>
-    <div style="width:75%;">
-        <canvas id="canvas"></canvas>
+    <div class="main">
+        <div style="flex: 2">
+            <canvas id="canvas1"></canvas>
+        </div>
+        <div class="workers" style="flex: 1">
+            <div id="worker1">
+                <span>worker1</span>
+                <span class="color"></span>
+            </div>
+            <div id="worker2">
+                <span>worker2</span>
+                <span class="color"></span>
+            </div>
+            <div id="worker3">
+                <span>worker3</span>
+                <span class="color"></span>
+            </div>
+        </div>
     </div>
     <script>
         Chart.pluginService.register({
@@ -70,7 +104,7 @@
         };
 
         window.onload = function() {
-            const ctx = document.getElementById('canvas').getContext('2d');
+            const ctx = document.getElementById('canvas1').getContext('2d');
             window.chart = new Chart(ctx, {
                 type: 'pie',
                 data: lineChartData,
@@ -102,7 +136,15 @@
                 });
                 window.requestAnimationFrame(() => {
                     window.chart.update();
-                }, 1000);
+                });
+            });
+            socket.on('worker-color', function(msg){
+                const color = msg.queue;
+                const worker = msg.worker;
+                window.requestAnimationFrame(() => {
+                    const colorEl = document.querySelector(`#worker${worker} .color`);
+                    colorEl.setAttribute("style", `background-color: ${color};`);
+                });
             });
         };
     </script>

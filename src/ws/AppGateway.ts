@@ -18,6 +18,10 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     this.server.emit('outbox', data);
   }
 
+  async sendColor(data) {
+    this.server.emit('worker-color', data);
+  }
+
   afterInit(server: Server) {
     this.logger.log('Init');
   }
