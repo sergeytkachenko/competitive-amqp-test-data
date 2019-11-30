@@ -9,7 +9,7 @@ export class TestDataPublisher {
   queuesCount: any = {
     red: 2000,
     green: 800,
-    blue: 300,
+    blue: 1300,
     yellow: 500,
     magenta: 600,
   };
