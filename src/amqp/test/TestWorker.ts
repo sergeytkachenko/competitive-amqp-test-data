@@ -19,6 +19,7 @@ export class TestWorker extends AbstractConsumer {
   }
 
   onConsume(msg: any): void {
+    const randomInt = require('random-int');
     setTimeout(() => {
       const outboxMessage = JSON.parse(msg.content) as OutboxTaskMessage;
       // console.log(`outbox, id: ${this.id}`, outboxMessage.payload);
@@ -32,7 +33,7 @@ export class TestWorker extends AbstractConsumer {
       confirmMsg.taskId = outboxMessage.taskId;
       confirmMsg.queue = outboxMessage.queue;
       this.channel.sendToQueue('confirm', Buffer.from(JSON.stringify(confirmMsg)));
-    }, 50);
+    }, randomInt(20, 30));
 
   }
 

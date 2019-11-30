@@ -18,6 +18,7 @@ export class TaskStore {
   tasks: any = {};
   queues: string[] = [];
   cursorQueue: number = -1;
+  inProcessTasks: number = 0;
 
   private init(): void {
     setInterval(() => this.nextTick(), 50);
@@ -33,7 +34,11 @@ export class TaskStore {
   private addTask(task: InboxTaskMessage): Promise<void> {
     const queue = task.queue;
     this.tasks[queue] = this.tasks[queue] || [];
-    this.tasks[queue].push(task);
+    const uuid = require('uuid/v1');
+    this.tasks[queue].push({
+      ...task,
+      taskId: uuid(),
+    });
     return Promise.resolve();
   }
 
@@ -44,16 +49,30 @@ export class TaskStore {
     return this.tasks[queue].shift();
   }
 
+  private removeTask(queue: string, taskId: string): any {
+    if (!this.tasks[queue] || this.tasks[queue].length === 0) {
+      return;
+    }
+    const indexOf = this.tasks[queue].indexOf(t => t.taskId === taskId);
+    this.tasks[queue] = this.tasks[queue].splice(indexOf, 1);
+    console.log(this.tasks[queue].length);
+  }
+
   push(task: InboxTaskMessage): void {
     this.addQueue(task.queue);
     this.addTask(task);
   }
 
   confirm(msg: ConfirmTaskMessage) {
-    console.log(msg.taskId);
+    // this.removeTask(msg.queue, msg.taskId);
+    this.inProcessTasks--;
+    this.nextTick();
   }
 
   nextTick() {
+    if (this.inProcessTasks > this.workers * 2) {
+      return;
+    }
     const queues = this.queues;
     if (!queues.length) {
       return;
@@ -65,14 +84,13 @@ export class TaskStore {
     const queue = this.queues[this.cursorQueue];
     const task = this.shiftTask(queue);
     if (!task) {
-      this.nextTick();
       return;
     }
     const outboxMsq = new OutboxTaskMessage();
-    const uuid = require('uuid/v1');
-    outboxMsq.taskId = uuid();
+    outboxMsq.taskId = task.taskId;
     outboxMsq.queue = queue;
     outboxMsq.payload = task.payload;
     this.outboxPublisher.send(outboxMsq);
+    this.inProcessTasks++;
   }
 }

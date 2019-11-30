@@ -6,11 +6,10 @@ import { InboxTaskMessage } from './dto/InboxTaskMessage';
 @Injectable()
 export class CreateTaskConsumer extends AbstractConsumer {
 
-  prefetchCount: 250;
   taskStore: TaskStore;
 
   constructor(@Inject('AMQP_CONNECT_STRING') amqpConnectionString: string, @Inject('INBOX') queue: string, taskStore: TaskStore) {
-    super(amqpConnectionString, queue);
+    super(amqpConnectionString, queue, 1000);
     this.taskStore = taskStore;
   }
 

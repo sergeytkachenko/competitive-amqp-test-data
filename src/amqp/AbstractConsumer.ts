@@ -5,11 +5,12 @@ export abstract class AbstractConsumer implements Consumer {
   amqpConnectionString: string;
   queue: string;
   channel: any;
-  prefetchCount: number = 1;
+  prefetchCount: number;
 
-  protected constructor(amqpConnectionString: string, queue: string) {
+  protected constructor(amqpConnectionString: string, queue: string, prefetchCount: number = 1) {
     this.amqpConnectionString = amqpConnectionString;
     this.queue = queue;
+    this.prefetchCount = prefetchCount;
     this.init();
   }
 

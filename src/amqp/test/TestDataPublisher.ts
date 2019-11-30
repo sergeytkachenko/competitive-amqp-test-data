@@ -7,7 +7,7 @@ export class TestDataPublisher {
   channel: any;
   queues: string[] = ['red', 'green', 'blue', 'yellow', 'magenta'];
   queuesCount: any = {
-    red: 2000,
+    red: 2 * 1000,
     green: 800,
     blue: 1300,
     yellow: 500,
@@ -17,22 +17,24 @@ export class TestDataPublisher {
   constructor(channel: any, queue: string) {
     this.channel = channel;
     this.queue = queue;
-    setTimeout(() => this.randomData(), 15 * 1000);
+    setTimeout(() => this.randomData(), 30 * 1000);
   }
 
   randomData(): void {
-    this.queues.forEach(queue => {
-      for (let i = 0; i < this.queuesCount[queue]; i ++) {
-        const payload = {
-          date: new Date(),
-          queue,
-        };
-        const message = {
-          payload,
-          queue,
-        };
-        this.channel.sendToQueue(this.queue, Buffer.from(JSON.stringify(message)));
-      }
+    this.queues.forEach((queue, index) => {
+      setTimeout(() => {
+        for (let i = 0; i < this.queuesCount[queue]; i ++) {
+          const payload = {
+            date: new Date(),
+            queue,
+          };
+          const message = {
+            payload,
+            queue,
+          };
+          this.channel.sendToQueue(this.queue, Buffer.from(JSON.stringify(message)));
+        }
+      }, 1);
     });
   }
 }
