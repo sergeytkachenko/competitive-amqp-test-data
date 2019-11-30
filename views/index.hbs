@@ -55,16 +55,16 @@
                 }
             }
         });
-        const tasks = {red: 0, green: 0, blue: 0};
+        const tasks = {red: 0, green: 0, blue: 0, yellow: 0, magenta: 0};
         function getData() {
-          return [tasks.red, tasks.green, tasks.blue];
+          return [tasks.red, tasks.green, tasks.blue, tasks.yellow, tasks.magenta];
         };
         const lineChartData = {
-            labels: ['red', 'green', 'blue'],
+            labels: ['red (2K)', 'green (800)', 'blue (300)', 'yellow (500)', 'magenta (600)'],
             datasets: [{
                 label: 'Dataset 1',
                 fill: false,
-                backgroundColor: ['red', 'green', 'blue'],
+                backgroundColor: ['red', 'green', 'blue', 'yellow', 'magenta'],
                 data: getData(),
             }]
         };

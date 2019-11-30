@@ -5,18 +5,24 @@ export class TestDataPublisher {
 
   queue: string;
   channel: any;
-  queues: string[] = ['green', 'red', 'blue'];
+  queues: string[] = ['red', 'green', 'blue', 'yellow', 'magenta'];
+  queuesCount: any = {
+    red: 2000,
+    green: 800,
+    blue: 300,
+    yellow: 500,
+    magenta: 600,
+  };
 
   constructor(channel: any, queue: string) {
     this.channel = channel;
     this.queue = queue;
     setTimeout(() => this.randomData(), 15 * 1000);
-    //setInterval(() => this.randomData(), 60 * 1000);
   }
 
   randomData(): void {
     this.queues.forEach(queue => {
-      for (let i = 0; i < 10  * 1000; i ++) {
+      for (let i = 0; i < this.queuesCount[queue]; i ++) {
         const payload = {
           date: new Date(),
           queue,

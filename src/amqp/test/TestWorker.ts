@@ -18,10 +18,10 @@ export class TestWorker extends AbstractConsumer {
   onConsume(msg: any): void {
     setTimeout(() => {
       const outboxMessage = JSON.parse(msg.content) as OutboxTaskMessage;
-      console.log(`outbox, id: ${this.id}`, outboxMessage.payload);
+      // console.log(`outbox, id: ${this.id}`, outboxMessage.payload);
       this.channel.ack(msg);
       this.gateway.brodcastAll(outboxMessage.payload);
-    }, 2000);
+    }, 5);
 
   }
 

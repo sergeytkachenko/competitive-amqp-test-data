@@ -18,6 +18,7 @@ export abstract class AbstractConsumer implements Consumer {
     const channel = await connection.createChannel();
     await channel.prefetch(1, false);
     this.channel = channel;
+    this.channel.deleteQueue(this.queue, {ifEmpty: true});
     this.channel.assertQueue(this.queue)
       .then(() => this.consume(this.queue));
   }
