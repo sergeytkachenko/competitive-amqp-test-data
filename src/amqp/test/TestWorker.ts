@@ -18,21 +18,23 @@ export class TestWorker extends AbstractConsumer {
     this.ID = TestWorker.id;
   }
 
-  onConsume(msg: any): void {
+  async onConsume(msg: any): Promise<any> {
     const randomInt = require('random-int');
     setTimeout(() => {
       const outboxMessage = JSON.parse(msg.content) as OutboxTaskMessage;
       // console.log(`outbox, id: ${this.id}`, outboxMessage.payload);
-      this.channel.ack(msg);
-      this.gateway.brodcastAll(outboxMessage.payload);
+      this.gateway.brodcastAll({
+        queue: outboxMessage.queue,
+      });
       this.gateway.sendColor({
         worker: this.ID,
-        queue: outboxMessage.payload.queue,
+        queue: outboxMessage.queue,
       });
       const confirmMsg = new ConfirmTaskMessage();
       confirmMsg.taskId = outboxMessage.taskId;
       confirmMsg.queue = outboxMessage.queue;
       this.channel.sendToQueue('confirm', Buffer.from(JSON.stringify(confirmMsg)));
+      this.channel.ack(msg);
     }, randomInt(20, 30));
 
   }

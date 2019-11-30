@@ -1,79 +1,62 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InboxTaskMessage } from '../amqp/dto/InboxTaskMessage';
 import { ConfirmTaskMessage } from '../amqp/dto/ConfirmTaskMessage';
 import { OutboxPublisher } from '../amqp/OutboxPublisher';
 import { OutboxTaskMessage } from '../amqp/dto/OutboxTaskMessage';
+import { TaskRepository } from './TaskRepository';
+import { QueueRepository } from './QueueRepository';
 
 @Injectable()
 export class TaskStore {
   outboxPublisher: OutboxPublisher;
 
-  constructor(outboxPublisher: OutboxPublisher) {
+  constructor(outboxPublisher: OutboxPublisher,
+              @Inject('CASSANDRA_CLIENT') private readonly cassandraClient: any,
+              private readonly taskRepository: TaskRepository,
+              private readonly queueRepository: QueueRepository) {
     this.outboxPublisher = outboxPublisher;
     this.init();
   }
 
   private readonly workers: number = 3;
 
-  tasks: any = {};
-  queues: string[] = [];
   cursorQueue: number = -1;
   inProcessTasks: number = 0;
 
   private init(): void {
-    setInterval(() => this.nextTick(), 50);
+    setInterval(() => this.nextTick(), 15);
   }
 
-  private addQueue(queue: string): Promise<void> {
-    if (this.queues.indexOf(queue) === -1) {
-      this.queues.push(queue);
-    }
+  private async addQueue(queue: string): Promise<void> {
+    await this.queueRepository.addQueue(queue);
     return Promise.resolve();
   }
 
-  private addTask(task: InboxTaskMessage): Promise<void> {
-    const queue = task.queue;
-    this.tasks[queue] = this.tasks[queue] || [];
-    const uuid = require('uuid/v1');
-    this.tasks[queue].push({
-      ...task,
-      taskId: uuid(),
-    });
-    return Promise.resolve();
+  private async addTask(task: InboxTaskMessage): Promise<void> {
+    return this.taskRepository.addTask(task);
   }
 
-  private shiftTask(queue: string): any {
-    if (!this.tasks[queue] || this.tasks[queue].length === 0) {
-      return;
-    }
-    return this.tasks[queue].shift();
+  private async shiftTask(queue: string): Promise<any> {
+    const lastTaskId = await this.queueRepository.getLastTaskIdByQueue(queue);
+    return this.taskRepository.getNextTaskByLastTaskId(lastTaskId, queue);
   }
 
-  private removeTask(queue: string, taskId: string): any {
-    if (!this.tasks[queue] || this.tasks[queue].length === 0) {
-      return;
-    }
-    const indexOf = this.tasks[queue].indexOf(t => t.taskId === taskId);
-    this.tasks[queue] = this.tasks[queue].splice(indexOf, 1);
-    console.log(this.tasks[queue].length);
+  async push(task: InboxTaskMessage): Promise<any> {
+    await this.addTask(task);
+    await this.addQueue(task.queue);
   }
 
-  push(task: InboxTaskMessage): void {
-    this.addQueue(task.queue);
-    this.addTask(task);
-  }
-
-  confirm(msg: ConfirmTaskMessage) {
-    // this.removeTask(msg.queue, msg.taskId);
+  async confirm(msg: ConfirmTaskMessage): Promise<void> {
+    await this.queueRepository.updateLastTask(msg.queue, msg.taskId);
     this.inProcessTasks--;
-    this.nextTick();
+    // await this.nextTick();
   }
 
-  nextTick() {
+  async nextTick(): Promise<void> {
     if (this.inProcessTasks > this.workers * 2) {
       return;
     }
-    const queues = this.queues;
+    const queues = this.queueRepository.getQueues();
     if (!queues.length) {
       return;
     }
@@ -81,16 +64,17 @@ export class TaskStore {
     if (queues.length <= this.cursorQueue) {
       this.cursorQueue = 0;
     }
-    const queue = this.queues[this.cursorQueue];
-    const task = this.shiftTask(queue);
+    const queue = queues[this.cursorQueue];
+    const task = await this.shiftTask(queue);
     if (!task) {
       return;
     }
     const outboxMsq = new OutboxTaskMessage();
-    outboxMsq.taskId = task.taskId;
+    outboxMsq.taskId = task.id.toString();
     outboxMsq.queue = queue;
     outboxMsq.payload = task.payload;
     this.outboxPublisher.send(outboxMsq);
     this.inProcessTasks++;
+
   }
 }

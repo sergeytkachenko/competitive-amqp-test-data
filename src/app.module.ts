@@ -8,6 +8,9 @@ import { TestDataPublisher } from './amqp/test/TestDataPublisher';
 import { TaskStore } from './task/TaskStore';
 import { TestWorker } from './amqp/test/TestWorker';
 import { AppGateway } from './ws/AppGateway';
+import * as cassandra from 'cassandra-driver';
+import { TaskRepository } from './task/TaskRepository';
+import { QueueRepository } from './task/QueueRepository';
 
 const connectionAmqp = 'amqp://user:password@k8s:30403';
 
@@ -18,9 +21,27 @@ const connectionAmqp = 'amqp://user:password@k8s:30403';
     AppService,
     AppGateway,
     {
+      provide: TaskRepository,
+      useClass: TaskRepository,
+    },
+    {
+      provide: QueueRepository,
+      useClass: QueueRepository,
+    },
+    {
       provide: TaskStore,
       useClass: TaskStore,
       inject: [AppGateway],
+    },
+    {
+      provide: 'CASSANDRA_CLIENT',
+      useFactory: () => {
+        return new cassandra.Client({
+          contactPoints: ['localhost'],
+          localDataCenter: 'datacenter1',
+          keyspace: 'task_manager',
+        });
+      },
     },
     {
       provide: 'AMQP_CONNECT_STRING',

@@ -7,17 +7,17 @@ export class TestDataPublisher {
   channel: any;
   queues: string[] = ['red', 'green', 'blue', 'yellow', 'magenta'];
   queuesCount: any = {
-    red: 2 * 1000,
-    green: 800,
+    red: 10 * 1000,
+    green: 1800,
     blue: 1300,
-    yellow: 500,
-    magenta: 600,
+    yellow: 1500,
+    magenta: 2600,
   };
 
   constructor(channel: any, queue: string) {
     this.channel = channel;
     this.queue = queue;
-    setTimeout(() => this.randomData(), 30 * 1000);
+    setTimeout(() => this.randomData(), 10 * 1000);
   }
 
   randomData(): void {

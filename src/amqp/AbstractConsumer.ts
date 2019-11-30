@@ -25,7 +25,7 @@ export abstract class AbstractConsumer implements Consumer {
       .then(() => this.consume(this.queue));
   }
 
-  consume(queue: string): Promise<any> {
+  async consume(queue: string): Promise<any> {
     return this.channel.consume(queue, (msg) => {
       if (msg !== null) {
         this.onConsume(msg);
@@ -33,5 +33,5 @@ export abstract class AbstractConsumer implements Consumer {
     });
   }
 
-  abstract onConsume(msg: any): void;
+  abstract async onConsume(msg: any): Promise<any>;
 }

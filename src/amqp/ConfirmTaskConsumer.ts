@@ -12,9 +12,9 @@ export class ConfirmTaskConsumer extends AbstractConsumer {
     super(amqpConnectionString, queue);
   }
 
-  onConsume(msg: any): void {
+  async onConsume(msg: any): Promise<any> {
     const massage = JSON.parse(msg.content) as ConfirmTaskMessage;
-    this.taskStore.confirm(massage);
+    await this.taskStore.confirm(massage);
     this.channel.ack(msg);
   }
 

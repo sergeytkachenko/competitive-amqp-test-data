@@ -26,6 +26,7 @@
     "@nestjs/platform-socket.io": "^6.10.3",
     "@nestjs/websockets": "^6.10.3",
     "amqplib": "^0.5.5",
+    "cassandra-driver": "^4.3.1",
     "express": "^4.17.1",
     "hbs": "^4.0.6",
     "random-int": "^2.0.1",

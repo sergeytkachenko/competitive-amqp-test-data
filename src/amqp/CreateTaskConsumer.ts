@@ -8,14 +8,19 @@ export class CreateTaskConsumer extends AbstractConsumer {
 
   taskStore: TaskStore;
 
-  constructor(@Inject('AMQP_CONNECT_STRING') amqpConnectionString: string, @Inject('INBOX') queue: string, taskStore: TaskStore) {
-    super(amqpConnectionString, queue, 1000);
+  constructor(@Inject('AMQP_CONNECT_STRING') amqpConnectionString: string,
+              @Inject('INBOX') queue: string,
+              taskStore: TaskStore) {
+    super(amqpConnectionString, queue, 250);
     this.taskStore = taskStore;
   }
 
-  onConsume(msg: any): void {
+  async onConsume(msg: any): Promise<any> {
     const taskMessage = JSON.parse(msg.content) as InboxTaskMessage;
-    this.taskStore.push(taskMessage);
+    const now = new Date();
+    await this.taskStore.push(taskMessage);
+    // @ts-ignore
+    console.log((new Date() - now));
     this.channel.ack(msg);
   }
 
