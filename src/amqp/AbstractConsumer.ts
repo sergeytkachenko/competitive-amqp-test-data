@@ -5,6 +5,7 @@ export abstract class AbstractConsumer implements Consumer {
   amqpConnectionString: string;
   queue: string;
   channel: any;
+  prefetchCount: number = 1;
 
   protected constructor(amqpConnectionString: string, queue: string) {
     this.amqpConnectionString = amqpConnectionString;
@@ -16,7 +17,7 @@ export abstract class AbstractConsumer implements Consumer {
     const connection = await require('amqplib')
       .connect(this.amqpConnectionString);
     const channel = await connection.createChannel();
-    await channel.prefetch(1, false);
+    await channel.prefetch(this.prefetchCount, false);
     this.channel = channel;
     await this.channel.deleteQueue(this.queue, {ifEmpty: false});
     this.channel.assertQueue(this.queue)

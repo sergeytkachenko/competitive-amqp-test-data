@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { OutboxTaskMessage } from './dto/OutboxTaskMessage';
 
 @Injectable()
 export class OutboxPublisher {
@@ -11,11 +12,8 @@ export class OutboxPublisher {
     this.queue = queue;
   }
 
-  send(payload: any, taskId: string): void {
-    const message = {
-      payload,
-      taskId,
-    };
-    this.channel.sendToQueue(this.queue, Buffer.from(JSON.stringify(message)));
+  send(message: OutboxTaskMessage): void {
+    const msg = Buffer.from(JSON.stringify(message));
+    this.channel.sendToQueue(this.queue, msg);
   }
 }

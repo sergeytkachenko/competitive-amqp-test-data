@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { AbstractConsumer } from '../AbstractConsumer';
 import { OutboxTaskMessage } from '../dto/OutboxTaskMessage';
 import { AppGateway } from '../../ws/AppGateway';
+import { ConfirmTaskMessage } from '../dto/ConfirmTaskMessage';
 
 @Injectable()
 export class TestWorker extends AbstractConsumer {
@@ -27,7 +28,11 @@ export class TestWorker extends AbstractConsumer {
         worker: this.ID,
         queue: outboxMessage.payload.queue,
       });
-    }, 5);
+      const confirmMsg = new ConfirmTaskMessage();
+      confirmMsg.taskId = outboxMessage.taskId;
+      confirmMsg.queue = outboxMessage.queue;
+      this.channel.sendToQueue('confirm', Buffer.from(JSON.stringify(confirmMsg)));
+    }, 50);
 
   }
 
