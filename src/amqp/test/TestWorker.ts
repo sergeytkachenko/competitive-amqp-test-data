@@ -30,10 +30,12 @@ export class TestWorker extends AbstractConsumer {
         worker: this.ID,
         queue: outboxMessage.queue,
       });
-      const confirmMsg = new ConfirmTaskMessage();
-      confirmMsg.taskId = outboxMessage.taskId;
-      confirmMsg.queue = outboxMessage.queue;
-      this.channel.sendToQueue('confirm', Buffer.from(JSON.stringify(confirmMsg)));
+      const confirmMsg = {
+        taskId: outboxMessage.taskId,
+        queue: outboxMessage.queue,
+        ns: outboxMessage.ns
+      } as ConfirmTaskMessage;
+      this.channel.sendToQueue('confirm1', Buffer.from(JSON.stringify(confirmMsg)));
       this.channel.ack(msg);
     }, randomInt(2, 10));
 

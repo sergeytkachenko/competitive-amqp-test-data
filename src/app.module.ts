@@ -1,17 +1,9 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { OutboxPublisher } from './amqp/OutboxPublisher';
-import { CreateTaskConsumer } from './amqp/CreateTaskConsumer';
-import { ConfirmTaskConsumer } from './amqp/ConfirmTaskConsumer';
 import { TestDataPublisher } from './amqp/test/TestDataPublisher';
-import { TaskStore } from './task/TaskStore';
 import { TestWorker } from './amqp/test/TestWorker';
 import { AppGateway } from './ws/AppGateway';
-import * as cassandra from 'cassandra-driver';
-import { TaskRepository } from './task/TaskRepository';
-import { QueueRepository } from './task/QueueRepository';
-import { RedisClient } from 'redis';
 
 const connectionAmqp = 'amqp://user:password@k8s:30403';
 
@@ -22,49 +14,20 @@ const connectionAmqp = 'amqp://user:password@k8s:30403';
     AppService,
     AppGateway,
     {
-      provide: TaskRepository,
-      useClass: TaskRepository,
-    },
-    {
-      provide: QueueRepository,
-      useClass: QueueRepository,
-    },
-    {
-      provide: TaskStore,
-      useClass: TaskStore,
-      inject: [AppGateway],
-    },
-    {
-      provide: RedisClient,
-      useFactory: () => {
-        const redis = require('redis');
-        const client = redis.createClient();
-        return client;
-      },
-    },
-    {
       provide: 'AMQP_CONNECT_STRING',
       useValue: 'amqp://user:password@k8s:30403',
     },
     {
       provide: 'INBOX',
-      useValue: 'inbox',
+      useValue: 'inbox1',
     },
     {
       provide: 'OUTBOX',
-      useValue: 'outbox',
+      useValue: 'outbox1',
     },
     {
       provide: 'CONFIRM',
-      useValue: 'confirm',
-    },
-    {
-      provide: CreateTaskConsumer,
-      useClass: CreateTaskConsumer,
-    },
-    {
-      provide: ConfirmTaskConsumer,
-      useClass: ConfirmTaskConsumer,
+      useValue: 'confirm1',
     },
     {
       provide: 'testWorker1',
@@ -79,24 +42,12 @@ const connectionAmqp = 'amqp://user:password@k8s:30403';
       useClass: TestWorker,
     },
     {
-      provide: OutboxPublisher,
-      useFactory: async () => {
-        const q = 'outbox';
-        const connection = await require('amqplib')
-          .connect(connectionAmqp);
-        const channel = await connection.createChannel();
-        await channel.assertQueue(q);
-        return new OutboxPublisher(channel, q);
-      },
-    },
-    {
       provide: TestDataPublisher,
       useFactory: async () => {
-        const q = 'inbox';
+        const q = 'inbox1';
         const connection = await require('amqplib')
           .connect(connectionAmqp);
         const channel = await connection.createChannel();
-        await channel.assertQueue(q);
         return new TestDataPublisher(channel, q);
       },
     }],
