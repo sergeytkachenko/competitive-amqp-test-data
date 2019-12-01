@@ -42,6 +42,30 @@ const connectionAmqp = 'amqp://user:password@k8s:30403';
       useClass: TestWorker,
     },
     {
+      provide: 'testWorker4',
+      useClass: TestWorker,
+    },
+    {
+      provide: 'testWorker5',
+      useClass: TestWorker,
+    },
+    {
+      provide: 'testWorker6',
+      useClass: TestWorker,
+    },
+    {
+      provide: 'testWorker7',
+      useClass: TestWorker,
+    },
+    {
+      provide: 'testWorker8',
+      useClass: TestWorker,
+    },
+    {
+      provide: 'testWorker9',
+      useClass: TestWorker,
+    },
+    {
       provide: TestDataPublisher,
       useFactory: async () => {
         const q = 'inbox1';
