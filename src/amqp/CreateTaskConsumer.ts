@@ -20,7 +20,7 @@ export class CreateTaskConsumer extends AbstractConsumer {
     const now = new Date();
     await this.taskStore.push(taskMessage);
     // @ts-ignore
-    console.log((new Date() - now));
+    // console.log((new Date() - now));
     this.channel.ack(msg);
   }
 

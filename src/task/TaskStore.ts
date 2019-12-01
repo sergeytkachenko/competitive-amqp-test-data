@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InboxTaskMessage } from '../amqp/dto/InboxTaskMessage';
 import { ConfirmTaskMessage } from '../amqp/dto/ConfirmTaskMessage';
 import { OutboxPublisher } from '../amqp/OutboxPublisher';
@@ -11,7 +11,6 @@ export class TaskStore {
   outboxPublisher: OutboxPublisher;
 
   constructor(outboxPublisher: OutboxPublisher,
-              @Inject('CASSANDRA_CLIENT') private readonly cassandraClient: any,
               private readonly taskRepository: TaskRepository,
               private readonly queueRepository: QueueRepository) {
     this.outboxPublisher = outboxPublisher;
@@ -28,8 +27,7 @@ export class TaskStore {
   }
 
   private async addQueue(queue: string): Promise<void> {
-    await this.queueRepository.addQueue(queue);
-    return Promise.resolve();
+    return this.queueRepository.addQueueNotExists(queue);
   }
 
   private async addTask(task: InboxTaskMessage): Promise<void> {
@@ -37,8 +35,7 @@ export class TaskStore {
   }
 
   private async shiftTask(queue: string): Promise<any> {
-    const lastTaskId = await this.queueRepository.getLastTaskIdByQueue(queue);
-    return this.taskRepository.getNextTaskByLastTaskId(lastTaskId, queue);
+    return this.taskRepository.getNextTask(queue);
   }
 
   async push(task: InboxTaskMessage): Promise<any> {
@@ -47,13 +44,11 @@ export class TaskStore {
   }
 
   async confirm(msg: ConfirmTaskMessage): Promise<void> {
-    await this.queueRepository.updateLastTask(msg.queue, msg.taskId);
     this.inProcessTasks--;
-    // await this.nextTick();
   }
 
   async nextTick(): Promise<void> {
-    if (this.inProcessTasks > this.workers * 2) {
+    if (this.inProcessTasks > this.workers * 5) {
       return;
     }
     const queues = this.queueRepository.getQueues();
@@ -70,11 +65,10 @@ export class TaskStore {
       return;
     }
     const outboxMsq = new OutboxTaskMessage();
-    outboxMsq.taskId = task.id.toString();
+    outboxMsq.taskId = task.id;
     outboxMsq.queue = queue;
     outboxMsq.payload = task.payload;
     this.outboxPublisher.send(outboxMsq);
     this.inProcessTasks++;
-
   }
 }

@@ -11,6 +11,7 @@ import { AppGateway } from './ws/AppGateway';
 import * as cassandra from 'cassandra-driver';
 import { TaskRepository } from './task/TaskRepository';
 import { QueueRepository } from './task/QueueRepository';
+import { RedisClient } from 'redis';
 
 const connectionAmqp = 'amqp://user:password@k8s:30403';
 
@@ -34,13 +35,11 @@ const connectionAmqp = 'amqp://user:password@k8s:30403';
       inject: [AppGateway],
     },
     {
-      provide: 'CASSANDRA_CLIENT',
+      provide: RedisClient,
       useFactory: () => {
-        return new cassandra.Client({
-          contactPoints: ['localhost'],
-          localDataCenter: 'datacenter1',
-          keyspace: 'task_manager',
-        });
+        const redis = require('redis');
+        const client = redis.createClient();
+        return client;
       },
     },
     {
