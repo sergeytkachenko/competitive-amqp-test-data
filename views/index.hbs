@@ -28,6 +28,21 @@
 <body>
     <div class="main">
         <div style="flex: 2">
+            <span class="sum red">
+                red: <strong></strong>
+            </span>
+            <span class="sum green">
+                green: <strong></strong>
+            </span>
+            <span class="sum blue">
+                blue: <strong></strong>
+            </span>
+            <span class="sum yellow">
+                yellow: <strong></strong>
+            </span>
+            <span class="magenta sum">
+                magenta: <strong></strong>
+            </span>
             <canvas id="canvas1"></canvas>
         </div>
         <div class="workers" style="flex: 1">
@@ -101,6 +116,11 @@
                 window.requestAnimationFrame(() => {
                     const colorEl = document.querySelector(`#worker${worker} .color`);
                     colorEl.setAttribute("style", `background-color: ${color};`);
+                });
+                window.requestAnimationFrame(() => {
+                    const el = document.querySelector(`.${color}.sum strong`);
+                    const int = parseInt(el.innerText) || 0;
+                    el.innerText = int + 1;
                 });
             });
         };

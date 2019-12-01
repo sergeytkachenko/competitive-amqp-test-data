@@ -35,7 +35,7 @@ export class TestWorker extends AbstractConsumer {
       confirmMsg.queue = outboxMessage.queue;
       this.channel.sendToQueue('confirm', Buffer.from(JSON.stringify(confirmMsg)));
       this.channel.ack(msg);
-    }, randomInt(20, 30));
+    }, randomInt(2, 10));
 
   }
 

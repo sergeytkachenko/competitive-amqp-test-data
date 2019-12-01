@@ -7,7 +7,7 @@ export class TestDataPublisher {
   channel: any;
   queues: string[] = ['red', 'green', 'blue', 'yellow', 'magenta'];
   queuesCount: any = {
-    red: 900 * 1000,
+    red: 1 * 1000,
     green: 1800,
     blue: 1300,
     yellow: 1500,
