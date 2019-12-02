@@ -37,7 +37,7 @@ export class TestWorker extends AbstractConsumer {
       } as ConfirmTaskMessage;
       this.channel.sendToQueue('confirm1', Buffer.from(JSON.stringify(confirmMsg)));
       this.channel.ack(msg);
-    }, randomInt(2, 10));
+    }, randomInt(2, 2));
 
   }
 
