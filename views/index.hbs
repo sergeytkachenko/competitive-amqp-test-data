@@ -95,7 +95,7 @@
                     }
                 }
             });
-            const socket = io.connect( 'http://127.0.0.1:3000', {
+            const socket = io.connect( window.location.href, {
                 reconnection: true,
                 reconnectionDelay: 1000,
                 reconnectionDelayMax : 5000,
