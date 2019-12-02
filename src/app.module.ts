@@ -5,7 +5,7 @@ import { TestDataPublisher } from './amqp/test/TestDataPublisher';
 import { TestWorker } from './amqp/test/TestWorker';
 import { AppGateway } from './ws/AppGateway';
 
-const connectionAmqp = 'amqp://user:password@k8s:30403';
+const connectionAmqp = 'amqp://gs:gs@tscore-dev-15:5672';
 
 @Module({
   imports: [],
@@ -15,7 +15,7 @@ const connectionAmqp = 'amqp://user:password@k8s:30403';
     AppGateway,
     {
       provide: 'AMQP_CONNECT_STRING',
-      useValue: 'amqp://user:password@k8s:30403',
+      useValue: connectionAmqp,
     },
     {
       provide: 'INBOX',
@@ -39,30 +39,6 @@ const connectionAmqp = 'amqp://user:password@k8s:30403';
     },
     {
       provide: 'testWorker3',
-      useClass: TestWorker,
-    },
-    {
-      provide: 'testWorker4',
-      useClass: TestWorker,
-    },
-    {
-      provide: 'testWorker5',
-      useClass: TestWorker,
-    },
-    {
-      provide: 'testWorker6',
-      useClass: TestWorker,
-    },
-    {
-      provide: 'testWorker7',
-      useClass: TestWorker,
-    },
-    {
-      provide: 'testWorker8',
-      useClass: TestWorker,
-    },
-    {
-      provide: 'testWorker9',
       useClass: TestWorker,
     },
     {
