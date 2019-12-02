@@ -42,6 +42,46 @@ const connectionAmqp = 'amqp://gs:gs@tscore-dev-15:5672';
       useClass: TestWorker,
     },
     {
+      provide: 'testWorker4',
+      useClass: TestWorker,
+    },
+    {
+      provide: 'testWorker5',
+      useClass: TestWorker,
+    },
+    {
+      provide: 'testWorker6',
+      useClass: TestWorker,
+    },
+    {
+      provide: 'testWorker7',
+      useClass: TestWorker,
+    },
+    {
+      provide: 'testWorker8',
+      useClass: TestWorker,
+    },
+    {
+      provide: 'testWorker9',
+      useClass: TestWorker,
+    },
+    {
+      provide: 'testWorker10',
+      useClass: TestWorker,
+    },
+    {
+      provide: 'testWorker11',
+      useClass: TestWorker,
+    },
+    {
+      provide: 'testWorker12',
+      useClass: TestWorker,
+    },
+    {
+      provide: 'testWorker13',
+      useClass: TestWorker,
+    },
+    {
       provide: TestDataPublisher,
       useFactory: async () => {
         const q = 'inbox1';
