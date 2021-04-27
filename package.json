@@ -31,7 +31,7 @@
     "express": "^4.17.1",
     "hbs": "^4.0.6",
     "random-int": "^2.0.1",
-    "redis": "^2.8.0",
+    "redis": "^3.1.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.0",
     "rxjs": "^6.5.3",
